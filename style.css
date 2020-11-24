@@ -1,0 +1,21 @@
+* {
+	font-family: monospace;
+}
+
+#text {
+	height: 32px;
+}
+
+#icon {
+	padding: 8px;
+	display: inline-block;
+	border: 2px solid black;
+}
+
+.on {
+	background-color: lime;
+}
+
+#buffer {
+	
+}
