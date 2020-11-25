@@ -2,8 +2,15 @@
 	font-family: monospace;
 }
 
-#text {
+.display {
 	height: 32px;
+}
+
+#message {
+	display: inline;
+	white-space: pre;
+	padding-right: 2px;
+	border-right: 2px solid gray;
 }
 
 #icon {
@@ -18,6 +25,11 @@
 }
 
 #symbols {
-	display: flex;
+	display: inline-flex;
 	gap: 3px;
+	padding: 3px;
+}
+
+.invalid {
+	background-color: red;
 }

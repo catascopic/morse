@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
-<html onkeydown="on(event)" onkeyup="off(event)">
+<html onkeydown="keyDown(event)" onkeyup="keyUp(event)">
 <head>
 <link rel="stylesheet" type="text/css" href="style.css">
 <script src="script.js"></script>
 <title>Telegraph</title>
 </head>
 <body>
-	<div id="text"></div>
+	<div class="display"><div id="message"></div></div>
 	<div id="icon">[SPACE] to transmit</div>
-	<div id="symbols"></div>
+	<div><div id="symbols"></div></div>
 </body>
 </html>
