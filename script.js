@@ -9,45 +9,55 @@ const CODE_THRESHOLD = 600;
 
 function on(event) {
 	if (event.code == 'Space' && !event.repeat) {
-		lightOn(true);
 		signal = Date.now();
 		window.clearTimeout(timeout);
+		lightOn(true);
 	}
 }
 
 function off(event) {
 	if (event.code == 'Space') {
-		lightOn(false);
 		let duration = Date.now() - signal;
-		buffer.push(duration < DOT_THRESHOLD ? '.': '-');
-		document.getElementById('buffer').innerText = buffer.join('');
+		let isDot = duration < DOT_THRESHOLD
+		buffer.push(isDot ? '.': '-');
+		displaySymbol(isDot);
 		timeout = window.setTimeout(endCode, CODE_THRESHOLD);
+		lightOn(false);
 	}
-}
-
-function lightOn(state) {
-	document.getElementById('icon').classList.toggle('on', state);
 }
 
 function endCode() {
 	let code = MORSE[buffer.join('')];
 	document.getElementById('text').innerText += code || '?';
 	// postData('http://catascopic.com', code);
-	document.getElementById('buffer').innerText = '';
+	clearSymbols();
 	buffer.length = 0;
+}
+
+function lightOn(state) {
+	document.getElementById('icon').classList.toggle('on', state);
+}
+
+function displaySymbol(isDot) {
+	let img = document.createElement('img');
+	img.src = (isDot ? 'dot': 'dash') + '.svg';
+	document.getElementById('symbols').appendChild(img);
+}
+
+function clearSymbols() {
+	let symbols = document.getElementById('symbols');
+	while (symbols.firstChild) {
+		symbols.lastChild.remove();
+	}
 }
 
 async function postData(url, data) {
 	let response = await fetch(url, {
-		method: 'POST', // *GET, POST, PUT, DELETE, etc.
-		mode: 'cors', // no-cors, *cors, same-origin
-		cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-		credentials: 'same-origin', // include, *same-origin, omit
-		headers: {
-			'Content-Type': 'application/json' // 'Content-Type': 'application/x-www-form-urlencoded',
+		method: 'POST',
+		cache: 'no-cache',
+		headers: { 
+			'Content-Type': 'application/json'
 		},
-		redirect: 'follow', // manual, *follow, error
-		referrerPolicy: 'no-referrer',
 		body: JSON.stringify(data)
 	});
 	return response.json();

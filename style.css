@@ -10,12 +10,14 @@
 	padding: 8px;
 	display: inline-block;
 	border: 2px solid black;
+	margin-bottom: 9px;
 }
 
 .on {
 	background-color: lime;
 }
 
-#buffer {
-	
+#symbols {
+	display: flex;
+	gap: 3px;
 }
