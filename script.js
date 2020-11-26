@@ -16,7 +16,7 @@ const SPACE_CHAR = ' ';
 function keyDown(event) {
 	if (!event.repeat) {
 		if (event.code == 'Space' && !event.shiftKey) {
-			signalOn()
+			signalOn();
 		} else if (inProgress()) {
 			if (event.code == 'Backspace') {
 				cancel();
@@ -26,7 +26,7 @@ function keyDown(event) {
 				case 'Space': addSpace(); break;
 				case 'Backspace': deleteLast(); break;
 				case 'Enter': endLine(); break;
-				default:
+				default: return;
 			}
 		}
 		if (invalid) {
@@ -50,9 +50,9 @@ function signalOn() {
 
 function signalOff() {
 	let duration = Date.now() - signal;
-	console.log(duration);
 	let isDot = duration < DOT_THRESHOLD;
 	signal = 0;
+	console.log(duration);
 	buffer.push(isDot ? '.': '-');
 	displaySymbol(isDot);
 	timeout = setTimeout(endCode, CODE_THRESHOLD);
@@ -66,7 +66,6 @@ function endCode() {
 		send(code);
 		clearSymbols();
 	} else {
-		lightOn(false);
 		setInvalid(true);
 		timeout = setTimeout(clearInvalid, 1000);
 		canDelete = false;
