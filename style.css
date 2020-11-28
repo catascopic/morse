@@ -2,13 +2,36 @@
 	font-family: monospace;
 }
 
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	display: flex;
+}
+
+.column {
+	flex: 1;
+	padding: 4px;
+}
+
+.sending {
+
+}
+
+.receiving {
+
+}
+
 .display {
-	height: 32px;
+	margin-bottom: 12px;
 }
 
 #message {
 	display: inline;
-	white-space: pre;
+	white-space: pre-wrap;
 	padding-right: 2px;
 	border-right: 2px solid gray;
 }
@@ -26,7 +49,7 @@
 
 #symbols {
 	display: inline-flex;
-	gap: 3px;
+	gap: 9px;
 	padding: 3px;
 }
 

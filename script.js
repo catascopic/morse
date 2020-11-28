@@ -13,6 +13,21 @@ const CODE_THRESHOLD = 600;
 
 const SPACE_CHAR = ' ';
 
+const PORT = 3637;
+
+var socket;
+
+function connect(name) {
+	socket = new WebSocket(`ws://${window.location.hostname}:${PORT}/${name}`);
+	socket.onmessage = function(event) {
+		console.log(name + ': ' + event.data);
+	};
+	socket.onclose = function(event) {
+		console.log(name + ' is disconnected: ' + event.reason);
+		socket = null;
+	};
+}
+
 function keyDown(event) {
 	if (!event.repeat) {
 		if (event.code == 'Space' && !event.shiftKey) {
@@ -29,6 +44,7 @@ function keyDown(event) {
 				default: return;
 			}
 		}
+		event.preventDefault();
 		if (invalid) {
 			clearTimeout(timeout);
 			clearInvalid();
@@ -52,18 +68,18 @@ function signalOff() {
 	let duration = Date.now() - signal;
 	let isDot = duration < DOT_THRESHOLD;
 	signal = 0;
-	console.log(duration);
+	// console.log(duration);
 	buffer.push(isDot ? '.': '-');
 	displaySymbol(isDot);
-	timeout = setTimeout(endCode, CODE_THRESHOLD);
+	timeout = setTimeout(endSequence, CODE_THRESHOLD);
 	lightOn(false);
 }
 
-function endCode() {
-	let code = MORSE[buffer.join('')];
+function endSequence() {
+	let letter = MORSE[buffer.join('')];
 	buffer.length = 0;
-	if (code) {
-		send(code);
+	if (letter) {
+		addLetter(letter);
 		clearSymbols();
 	} else {
 		setInvalid(true);
@@ -72,10 +88,11 @@ function endCode() {
 	}
 }
 
-function send(code) {
+function addLetter(letter) {
 	canDelete = true;
-	message.push(code);
+	message.push(letter);
 	display();
+	send(letter);
 }
 
 function cancel() {
@@ -89,7 +106,7 @@ function cancel() {
 
 function addSpace() {
 	if (message.length && message[message.length - 1] != SPACE_CHAR) {
-		send(SPACE_CHAR);
+		addLetter(SPACE_CHAR);
 	}
 }
 
@@ -98,14 +115,16 @@ function deleteLast() {
 		message.pop();
 		display();
 		canDelete = false;
+		send('delete');
 	}
 }
 
 function endLine() {
 	if (!inProgress()) {
-		canDelete = false;
-		message.length = 0;
 		display();
+		message.length = 0;
+		canDelete = false;
+		send('newline');
 	}
 }
 
@@ -113,13 +132,21 @@ function inProgress() {
 	return signal || buffer.length;
 }
 
-function display() {
-	document.getElementById('message').innerText = message.join('');
+function send(code) {
+	if (socket) {
+		socket.send(code);
+	}
 }
 
 function clearInvalid() {
 	setInvalid(false);
 	clearSymbols();
+}
+
+// UI FUNCTIONS
+
+function display() {
+	document.getElementById('message').innerText = message.join('');
 }
 
 function lightOn(state) {
@@ -174,7 +201,7 @@ const MORSE = {
 	"-..-": "X",
 	"-.--": "Y",
 	"--..": "Z",
-	
+
 	".----": "1",
 	"..---": "2",
 	"...--": "3",
@@ -185,7 +212,7 @@ const MORSE = {
 	"---..": "8",
 	"----.": "9",
 	"-----": "0",
-	
+
 	".-.-.-": ".",
 	"--..--": ",",
 	"..--..": "?",
