@@ -120,9 +120,9 @@ function deleteLast() {
 }
 
 function endLine() {
-	if (!inProgress()) {
-		display();
+	if (!inProgress() && message.length) {
 		message.length = 0;
+		display();
 		canDelete = false;
 		send('newline');
 	}
@@ -212,7 +212,7 @@ const MORSE = {
 	"---..": "8",
 	"----.": "9",
 	"-----": "0",
-
+	
 	".-.-.-": ".",
 	"--..--": ",",
 	"..--..": "?",

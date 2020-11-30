@@ -1,5 +1,14 @@
+:root {
+	--amber: #FFB000;
+}
+
 * {
 	font-family: monospace;
+}
+
+html {
+	background-color: black;
+	color: var(--amber);
 }
 
 html, body {
@@ -14,7 +23,7 @@ body {
 
 .column {
 	flex: 1;
-	padding: 4px;
+	padding: 12px;
 }
 
 .sending {
@@ -39,12 +48,13 @@ body {
 #icon {
 	padding: 8px;
 	display: inline-block;
-	border: 2px solid black;
+	border: 2px solid var(--amber);
 	margin-bottom: 9px;
 }
 
 .on {
-	background-color: lime;
+	background-color: var(--amber);
+	color: black;
 }
 
 #symbols {
