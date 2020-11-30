@@ -153,6 +153,8 @@ function lightOn(state) {
 	document.getElementById('icon').classList.toggle('on', state);
 }
 
+// TODO: red doesn't look good anymore
+
 function setInvalid(state) {
 	invalid = state;
 	document.getElementById('symbols').classList.toggle('invalid', state);
@@ -172,6 +174,12 @@ function clearSymbols() {
 	while (symbols.firstChild) {
 		symbols.lastChild.remove();
 	}
+}
+
+var latest = {};
+
+function createMessageDisplay(name) {
+	
 }
 
 const MORSE = {
