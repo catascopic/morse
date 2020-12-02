@@ -6,7 +6,7 @@ var buffer = [];
 var invalid = false;
 var canDelete;
 
-var message = [];
+var message = '';
 
 const DOT_THRESHOLD = 200;
 const CODE_THRESHOLD = 600;
@@ -90,7 +90,7 @@ function endSequence() {
 
 function addLetter(letter) {
 	canDelete = true;
-	message.push(letter);
+	message += letter;
 	display();
 	send(letter);
 }
@@ -112,7 +112,7 @@ function addSpace() {
 
 function deleteLast() {
 	if (canDelete && message.length) {
-		message.pop();
+		message = message.slice(0, -1);
 		display();
 		canDelete = false;
 		send('delete');
@@ -121,7 +121,7 @@ function deleteLast() {
 
 function endLine() {
 	if (!inProgress() && message.length) {
-		message.length = 0;
+		message = '';
 		display();
 		canDelete = false;
 		send('newline');
@@ -143,10 +143,30 @@ function clearInvalid() {
 	clearSymbols();
 }
 
+function receive(message) {
+	if (message.backlog) {
+		for (let entry of backlog) {
+			createChat(entry.name, entry.text);
+		}
+	} else {
+		let updater;
+		if (message.newline) {
+			updater = createChat(message.name);
+		} else {
+			updater = latestMessage[message.name];
+		}
+		if (message['delete']) {
+			updater.pop();
+		} else {
+			updater.push(message.signal);
+		}
+	}
+}
+
 // UI FUNCTIONS
 
 function display() {
-	document.getElementById('message').innerText = message.join('');
+	document.getElementById('message').innerText = message;
 }
 
 function lightOn(state) {
@@ -176,10 +196,33 @@ function clearSymbols() {
 	}
 }
 
-var latest = {};
+var latestChat = {};
 
-function createMessageDisplay(name) {
+function createChat(name, text='') {
+	let chatText = text;
+	let chatNode = document.createElement('div');
+	chatNode.classList.add('chat');
+	let chatNameNode = document.createElement('div');
+	chatNameNode.classList.add('chat-name');
+	chatNameNode.innerText = name;
+	let chatTextNode = document.createElement('div');
+	chatTextNode.classList.add('chat-message');
+	chatTextNode.innerText = chatText;
+	chatNode.append(chatNameNode, chatTextNode);
+	document.getElementById('chats').prepend(chatNode);
 	
+	let updater = {
+		add: function(letter) {
+			chatText += letter;
+			chatTextNode.innerText = chatText;
+		},
+		del: function() {
+			chatText = chatText.slice(0, -1);
+			chatTextNode.innerText = chatText;
+		}
+	};
+	latestChat[name] = updater;
+	return updater;
 }
 
 const MORSE = {
