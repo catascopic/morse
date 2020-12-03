@@ -17,19 +17,26 @@ html {
 }
 
 html, body {
-	height: 100%;
 	margin: 0;
 	padding: 0;
+	height: 100%;
 }
 
 body {
+	box-sizing: border-box;
+	border: 20px solid transparent; /* kind of a hack */
 	display: flex;
+	justify-content: center;
+	background-color: gray;
+	gap: 20px;
 }
 
 .column {
 	flex: 1;
-	padding: 12px;
+	padding: 8px;
 	overflow-y: auto;
+	max-width: 600px;
+	background-color: black;
 }
 
 .sending {
@@ -60,7 +67,7 @@ body {
 }
 
 .display {
-	margin-bottom: 12px;
+	
 }
 
 #message {
@@ -74,7 +81,7 @@ body {
 	padding: 8px;
 	display: inline-block;
 	border: 2px solid var(--amber);
-	margin-bottom: 9px;
+	margin-top: 12px;
 }
 
 .on {
@@ -83,11 +90,30 @@ body {
 }
 
 #symbols {
+	height: 9px;
+	padding: 0;
+	margin-top: 9px;
 	display: inline-flex;
 	gap: 9px;
-	padding: 3px;
 }
 
 .invalid {
 	background-color: red;
+}
+
+.prompt {
+	margin-top: 20px;
+}
+
+#prompt-text {
+	/* border: 2px solid var(--amber); */
+	font-size: 24px;
+}
+
+input {
+	margin-top: 4px;
+	border: 2px solid white;
+	padding: 2px;
+	background-color: black;
+	color: var(--amber);
 }

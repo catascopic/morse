@@ -4,8 +4,9 @@ var signal;
 var timeout;
 var buffer = [];
 var invalid = false;
-var canDelete;
+var canUndo;
 
+var myName = 'PLU';
 var message = '';
 
 const DOT_THRESHOLD = 200;
@@ -20,6 +21,7 @@ var socket;
 function connect(name) {
 	socket = new WebSocket(`ws://${window.location.hostname}:${PORT}/${name}`);
 	socket.onmessage = function(event) {
+		receive(JSON.parse(event.data));
 		console.log(name + ': ' + event.data);
 	};
 	socket.onclose = function(event) {
@@ -29,18 +31,31 @@ function connect(name) {
 }
 
 function keyDown(event) {
-	if (!event.repeat) {
-		if (event.code == 'Space' && !event.shiftKey) {
-			signalOn();
-		} else if (inProgress()) {
+	let responseInput = document.getElementById('response-input');
+	// space is always the morse key
+	if (event.code == 'Space' && !event.shiftKey) {
+		signalOn();
+		responseInput.blur();
+	} else if (document.activeElement == responseInput) {
+		switch (event.code) {
+			case 'Enter': 
+				sumbitResponse(responseInput.value);
+				responseInput.value = '';
+			// fallthrough
+			case 'Escape': responseInput.blur(); break;
+			default:
+		}
+	} else if (!event.repeat) {
+		if (inProgress()) {
 			if (event.code == 'Backspace') {
 				cancel();
 			}
 		} else {
-			switch (event.code) {
+			switch (event.code) {				
 				case 'Space': addSpace(); break;
-				case 'Backspace': deleteLast(); break;
-				case 'Enter': endLine(); break;
+				case 'Backspace': undo(); break;
+				case 'Enter': newline(); break;
+				case 'KeyI': responseInput.focus(); break;
 				default: return;
 			}
 		}
@@ -84,24 +99,25 @@ function endSequence() {
 	} else {
 		setInvalid(true);
 		timeout = setTimeout(clearInvalid, 1000);
-		canDelete = false;
+		canUndo = false;
 	}
-}
-
-function addLetter(letter) {
-	canDelete = true;
-	message += letter;
-	display();
-	send(letter);
 }
 
 function cancel() {
 	signal = 0;
 	buffer.length = 0;
-	canDelete = false;
+	canUndo = false;
 	clearTimeout(timeout);
 	lightOn(false);
 	clearSymbols();
+}
+
+function addLetter(letter) {
+	canUndo = true;
+	message += letter;
+	display();
+	send({signal: letter});
+	// latestChat[myName].push(letter);
 }
 
 function addSpace() {
@@ -110,21 +126,23 @@ function addSpace() {
 	}
 }
 
-function deleteLast() {
-	if (canDelete && message.length) {
+// TODO: apply undo only when sending a letter?
+function undo() {
+	if (canUndo && message.length) {
 		message = message.slice(0, -1);
 		display();
-		canDelete = false;
-		send('delete');
+		canUndo = false;
+		send({'detete':true});
 	}
 }
 
-function endLine() {
+// TODO: apply newline only when sending a letter?
+function newline() {
 	if (!inProgress() && message.length) {
 		message = '';
 		display();
-		canDelete = false;
-		send('newline');
+		canUndo = false;
+		send({newline: true});
 	}
 }
 
@@ -132,9 +150,11 @@ function inProgress() {
 	return signal || buffer.length;
 }
 
-function send(code) {
+function send(data) {
 	if (socket) {
-		socket.send(code);
+		socket.send(JSON.stringify(data));
+	} else {
+		// TODO?
 	}
 }
 
@@ -143,24 +163,30 @@ function clearInvalid() {
 	clearSymbols();
 }
 
-function receive(message) {
-	if (message.backlog) {
+function receive(data) {
+	if (data.backlog) {
 		for (let entry of backlog) {
 			createChat(entry.name, entry.text);
 		}
 	} else {
 		let updater;
-		if (message.newline) {
-			updater = createChat(message.name);
+		if (data.newline) {
+			updater = createChat(data.name);
 		} else {
-			updater = latestMessage[message.name];
+			updater = latestMessage[data.name];
 		}
-		if (message['delete']) {
+		if (data.undo) {
 			updater.pop();
 		} else {
-			updater.push(message.signal);
+			updater.push(data.signal);
 		}
 	}
+}
+
+// GAME FUNCTIONS
+
+function sumbitResponse(response) {
+	send({response: response});
 }
 
 // UI FUNCTIONS
@@ -212,11 +238,11 @@ function createChat(name, text='') {
 	document.getElementById('chats').prepend(chatNode);
 	
 	let updater = {
-		add: function(letter) {
+		push: function(letter) {
 			chatText += letter;
 			chatTextNode.innerText = chatText;
 		},
-		del: function() {
+		pop: function() {
 			chatText = chatText.slice(0, -1);
 			chatTextNode.innerText = chatText;
 		}
