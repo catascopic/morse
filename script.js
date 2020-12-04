@@ -33,7 +33,7 @@ function connect(name) {
 function keyDown(event) {
 	let responseInput = document.getElementById('response-input');
 	// space is always the morse key
-	if (event.code == 'Space' && !event.shiftKey) {
+	if (event.code == 'Space' && !event.repeat && !event.shiftKey) {
 		signalOn();
 		responseInput.blur();
 	} else if (document.activeElement == responseInput) {
@@ -45,7 +45,7 @@ function keyDown(event) {
 			case 'Escape': responseInput.blur(); break;
 			default:
 		}
-	} else if (!event.repeat) {
+	} else {
 		if (inProgress()) {
 			if (event.code == 'Backspace') {
 				cancel();
