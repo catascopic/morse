@@ -192,13 +192,13 @@ input:focus {
 .codebook {
 	display: grid;
 	grid-auto-flow: column;
-	grid-template-rows: repeat(20, 1fr);
+	grid-template-rows: repeat(16, 1fr);
 }
 
 .codebook > div {
 	padding: 0 4px;
 	display: flex;
-	gap: 16px;
+	gap: 14px;
 }
 
 .codebook > div > span {

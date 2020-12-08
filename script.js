@@ -269,15 +269,12 @@ function createChat(name, text='') {
 }
 
 function createCodebook(codebook) {
-	let entries = Object.entries(codebook);
-	// sort these just in case the key-value order isn't preserved
-	entries.sort((a, b) => a[0].localeCompare(b[0]));
 	document.getElementById('codebook-table').innerHTML = 
-		entries.map(entry => `<div><span>${entry[0]}:</span><span>${entry[1]}</span></div>`).join('')
+		codebook.map(entry => `<div><span>${entry[0]}:</span><span>${entry[1]}</span></div>`).join('')
 }
 
 window.onload = function() {
-	createCodebook({"address":"routine","alter":"penalty","benefit":"absolute","brain":"after","consist":"bullet","continued":"freeze","convince":"everyday","cover":"accuse","dependent":"procedure","drawing":"finance","driver":"learn","entire":"warning","equipment":"really","exceed":"friend","familiar":"opposite","follow":"string","genetic":"field","habitat":"tower","handful":"tomorrow","impossible":"fence","incentive":"negative","killing":"storm","majority":"nuclear","mouth":"eight","music":"leather","numerous":"effect","ocean":"marry","party":"beneath","plate":"organize","preference":"undergo","quietly":"chance","radical":"breakfast","reach":"piano","reasonable":"ancient","scene":"movement","shoulder":"fiber","start":"deserve","stone":"plant","ultimately":"super","unlike":"profit"});
+	createCodebook([["access","secure"],["adapt","whole"],["again","comment"],["artist","relevant"],["brother","repeatedly"],["creation","freedom"],["current","heart"],["defendant","desperate"],["distinct","structure"],["drawing","think"],["garden","shelf"],["importance","counter"],["infection","useful"],["instrument","traffic"],["interested","major"],["journal","slide"],["largely","appearance"],["manage","protein"],["national","disease"],["party","liberal"],["piece","prime"],["plate","summer"],["pollution","skill"],["portrait","economist"],["purchase","block"],["regional","energy"],["rifle","journalist"],["thick","because"],["thousand","incredible"],["weather","founder"],["while","taxpayer"],["yours","actually"]]);
 }
 
 const MORSE = {
