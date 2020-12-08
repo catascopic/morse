@@ -181,11 +181,9 @@ function receive(data) {
 			createChat(entry.name, entry.text);
 		}
 	} else {
-		let updater;
-		if (data.newline) {
+		let updater = latestChat[data.name];
+		if (data.newline || !updater) {
 			updater = createChat(data.name);
-		} else {
-			updater = latestMessage[data.name];
 		}
 		if (data.undo) {
 			updater.pop();
