@@ -9,6 +9,8 @@ var canUndo;
 var myName = 'PLU';
 var message = '';
 
+var activeTab = 'main';
+
 const DOT_THRESHOLD = 200;
 const CODE_THRESHOLD = 600;
 
@@ -31,9 +33,13 @@ function connect(name) {
 }
 
 function keyDown(event) {
+	if (event.repeat) {
+		return;
+	}
+
 	let responseInput = document.getElementById('response-input');
 	// space is always the morse key
-	if (event.code == 'Space' && !event.repeat && !event.shiftKey) {
+	if (event.code == 'Space' && !event.shiftKey) {
 		signalOn();
 		responseInput.blur();
 	} else if (document.activeElement == responseInput) {
@@ -56,6 +62,7 @@ function keyDown(event) {
 				case 'Backspace': undo(); break;
 				case 'Enter': newline(); break;
 				case 'KeyI': responseInput.focus(); break;
+				case 'KeyM': setTab('chart'); break;
 				default: return;
 			}
 		}
@@ -70,6 +77,11 @@ function keyDown(event) {
 function keyUp(event) {
 	if (event.code == 'Space' && signal) {
 		signalOff();
+	} else {
+		switch (event.code) {
+			case 'KeyM': setTab('main'); break;
+			default:
+		}
 	}
 }
 
@@ -190,6 +202,13 @@ function sumbitResponse(response) {
 }
 
 // UI FUNCTIONS
+
+
+function setTab(tabName) {
+	document.getElementById(activeTab).classList.add('hidden');	
+	document.getElementById(tabName).classList.remove('hidden');
+	activeTab = tabName;
+}
 
 function display() {
 	document.getElementById('message').innerText = message;
