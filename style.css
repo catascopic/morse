@@ -38,8 +38,9 @@ body {
 	flex: 1;
 	padding: 8px;
 	overflow-y: auto;
-	max-width: 600px;
+	max-width: 480px;
 	background-color:  var(--background);
+	border: 2px solid lightSlateGray;
 }
 
 .sending {
@@ -85,7 +86,7 @@ body {
 	display: inline;
 	white-space: pre-wrap;
 	padding-right: 2px;
-	border-right: 2px solid gray;
+	border-right: 2px solid var(--amber);
 }
 
 #icon {
@@ -131,10 +132,19 @@ body {
 	font-size: 24px;
 }
 
-input {
+#response-input {
 	margin-top: 4px;
-	border: 2px solid black;
+	text-transform: uppercase;
+}
+
+input {
+	border: 2px solid lightSlateGray;
 	padding: 2px;
 	background-color: var(--background);
 	color: var(--amber);
+}
+
+input:focus {
+    outline: none;
+	border-color: var(--amber);
 }
