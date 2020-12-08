@@ -62,7 +62,7 @@ function keyDown(event) {
 				case 'Backspace': undo(); break;
 				case 'Enter': newline(); break;
 				case 'KeyI': responseInput.focus(); break;
-				case 'Tab': setTab('chart'); break;
+				case 'KeyM': setTab(activeTab == 'main' ? 'chart' : 'main'); break;
 				default: return;
 			}
 		}
@@ -79,7 +79,7 @@ function keyUp(event) {
 		signalOff();
 	} else {
 		switch (event.code) {
-			case 'Tab': setTab('main'); break;
+			// case 'KeyM': setTab('main'); break;
 			default:
 		}
 	}
@@ -266,6 +266,18 @@ function createChat(name, text='') {
 	};
 	latestChat[name] = updater;
 	return updater;
+}
+
+function createCodebook(codebook) {
+	let entries = Object.entries(codebook);
+	// sort these just in case the key-value order isn't preserved
+	entries.sort((a, b) => a[0].localeCompare(b[0]));
+	document.getElementById('codebook-table').innerHTML = 
+		entries.map(entry => `<div><span>${entry[0]}:</span><span>${entry[1]}</span></div>`).join('')
+}
+
+window.onload = function() {
+	createCodebook({"address":"routine","alter":"penalty","benefit":"absolute","brain":"after","consist":"bullet","continued":"freeze","convince":"everyday","cover":"accuse","dependent":"procedure","drawing":"finance","driver":"learn","entire":"warning","equipment":"really","exceed":"friend","familiar":"opposite","follow":"string","genetic":"field","habitat":"tower","handful":"tomorrow","impossible":"fence","incentive":"negative","killing":"storm","majority":"nuclear","mouth":"eight","music":"leather","numerous":"effect","ocean":"marry","party":"beneath","plate":"organize","preference":"undergo","quietly":"chance","radical":"breakfast","reach":"piano","reasonable":"ancient","scene":"movement","shoulder":"fiber","start":"deserve","stone":"plant","ultimately":"super","unlike":"profit"});
 }
 
 const MORSE = {

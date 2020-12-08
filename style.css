@@ -36,13 +36,14 @@ body {
 
 .content {
 	height: 100%;
+	display: flex;
+	justify-content: center;
+	gap: 20px;
 	/* height: 480px; */
 }
 
 #main {
-	display: flex;
-	justify-content: center;
-	gap: 20px;
+	
 }
 
 .column {
@@ -161,55 +162,50 @@ input:focus {
 	border-color: var(--amber);
 }
 
-#chart {
-	display: flex;
-	justify-content: center;
-}
-
-.chart-frame {
-	background-color:  var(--background);
-	max-width: 480px;
-	flex: 1;
-	padding: 8px;
-	box-sizing: border-box;
-	border: 2px solid lightSlateGray;
-}
-
 .chart-title {
-	text-align: center;
 	font-size: 24px;
-	margin-bottom: 16px;
+	text-align: center;
+	margin-bottom: 8px;
 }
 
-.chart-columns {
+.morse {
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-rows: repeat(13, 1fr);
+}
+
+.morse > div {
 	display: flex;
-	justify-content: center;
-	gap: 24px;
+	align-items: center;
+	gap: 9px;
 }
 
-#chart table {
-	flex: 1;
-}
-
-#chart td {
+.morse > div > span:first-child {
 	font-size: 18px;
-	font-weight: bold;
 }
 
-#chart td:first-child {
-	display: inline-flex;
-	padding-right: 9px;
-}
-
-#chart td:nth-child(2) {
+.morse > div > span:nth-child(2) {
 	display: inline-flex;
 	gap: 9px;
 }
 
-.chart-message {
-	margin-top: 16px;
+.codebook {
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-rows: repeat(20, 1fr);
+}
+
+.codebook > div {
+	padding: 0 4px;
+	display: flex;
+	gap: 16px;
+}
+
+.codebook > div > span {
 	font-size: 14px;
 }
+
+
 
 kbd {
     border-radius: 3px;
