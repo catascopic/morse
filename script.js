@@ -186,21 +186,24 @@ function clearInvalid() {
 
 function receive(data) {
 	if (data.backlog) {
-		for (let entry of backlog) {
-			createChat(entry.name, entry.content);
+		for (let message of backlog) {
+			createChat(message.name, message.content);
 		}
 	}
 	if (data.message) {
-		updateChat(data.name, data.message, data.newline);
+		updateChat(data.message.name, data.message.content, data.newline);
 	}
-	if (data.goal) {
+	if (data.goal != undefined) {
 		setLocks(data.goal);
+	}
+	if (data.codebook) {
+		createCodebook(data.codebook);
 	}
 	if (data.prompt) {
 		setPrompt(data.prompt);
 	}
-	if (data.feedback) {
-		setFeedback(data.feedback);
+	if (data.feedback != undefined) {
+		setFeedback(data.feedback ? 'Correct!' : 'Incorrect.');
 	}
 }
 
