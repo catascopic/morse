@@ -3,11 +3,13 @@
 var signal;
 var timeout;
 var buffer = [];
-var invalid = false;
+var newline = false;
 var canUndo;
 
+var invalid = false;
+
 var myName = 'PLU';
-var message = '';
+var myChat = '';
 
 var activeTab = 'main';
 
@@ -43,6 +45,7 @@ function keyDown(event) {
 		signalOn();
 		responseInput.blur();
 	} else if (document.activeElement == responseInput) {
+		clearFeedback();
 		switch (event.code) {
 			case 'Enter': 
 				sumbitResponse(responseInput.value);
@@ -57,20 +60,21 @@ function keyDown(event) {
 				cancel();
 			}
 		} else {
-			switch (event.code) {				
+			switch (event.code) {			
 				case 'Space': addSpace(); break;
 				case 'Backspace': undo(); break;
-				case 'Enter': newline(); break;
+				case 'Enter': endLine(); break;
 				case 'KeyI': responseInput.focus(); break;
 				case 'KeyM': setTab(activeTab == 'main' ? 'chart' : 'main'); break;
 				default: return;
 			}
+			event.preventDefault();
 		}
-		event.preventDefault();
-		if (invalid) {
-			clearTimeout(timeout);
-			clearInvalid();
-		}
+	}
+	clearFeedback();
+	if (invalid) {
+		clearTimeout(timeout);
+		clearInvalid();
 	}
 }
 
@@ -126,35 +130,39 @@ function cancel() {
 
 function addLetter(letter) {
 	canUndo = true;
-	message += letter;
+	myChat += letter;
 	display();
-	send({signal: letter});
-	// latestChat[myName].push(letter);
+	updateChat(myName, myChat, newline);
+	message = {message: myChat};
+	if (newline) {
+		message.newline = true;
+		newline = false;
+	}
+	send(message);
 }
 
 function addSpace() {
-	if (message.length && message[message.length - 1] != SPACE_CHAR) {
+	if (myChat.length && myChat[myChat.length - 1] != SPACE_CHAR) {
 		addLetter(SPACE_CHAR);
 	}
 }
 
-// TODO: apply undo only when sending a letter?
 function undo() {
-	if (canUndo && message.length) {
-		message = message.slice(0, -1);
+	if (canUndo && myChat.length) {
+		myChat = myChat.slice(0, -1);
 		display();
+		updateChat(myName, myChat);
+		send({message: myChat});
 		canUndo = false;
-		send({'detete':true});
 	}
 }
 
-// TODO: apply newline only when sending a letter?
-function newline() {
-	if (!inProgress() && message.length) {
-		message = '';
+function endLine() {
+	if (!inProgress() && myChat.length >= 5) {
+		myChat = '';
 		display();
 		canUndo = false;
-		send({newline: true});
+		newline = true;
 	}
 }
 
@@ -166,6 +174,7 @@ function send(data) {
 	if (socket) {
 		socket.send(JSON.stringify(data));
 	} else {
+		console.log(data);
 		// TODO?
 	}
 }
@@ -178,25 +187,35 @@ function clearInvalid() {
 function receive(data) {
 	if (data.backlog) {
 		for (let entry of backlog) {
-			createChat(entry.name, entry.text);
-		}
-	} else {
-		let updater = latestChat[data.name];
-		if (data.newline || !updater) {
-			updater = createChat(data.name);
-		}
-		if (data.undo) {
-			updater.pop();
-		} else {
-			updater.push(data.signal);
+			createChat(entry.name, entry.content);
 		}
 	}
+	if (data.message) {
+		updateChat(data.name, data.message, data.newline);
+	}
+	if (data.goal) {
+		setLocks(data.goal);
+	}
+	if (data.prompt) {
+		setPrompt(data.prompt);
+	}
+	if (data.feedback) {
+		setFeedback(data.feedback);
+	}
+}
+
+function updateChat(name, content, newline) {
+	let updater = latestChat[name];
+	if (newline || !updater) {
+		updater = createChat(name);
+	}
+	updater.set(content);
 }
 
 // GAME FUNCTIONS
 
 function sumbitResponse(response) {
-	send({response: response});
+	send({response: response.trim().toLowerCase()});
 }
 
 // UI FUNCTIONS
@@ -209,7 +228,7 @@ function setTab(tabName) {
 }
 
 function display() {
-	document.getElementById('message').innerText = message;
+	document.getElementById('message').innerText = myChat;
 }
 
 function lightOn(state) {
@@ -225,8 +244,10 @@ function setInvalid(state) {
 
 const DOT = new Image();
 const DASH = new Image();
+const LOCK = new Image();
 DOT.src = 'dot.svg';
 DASH.src = 'dash.svg';
+LOCK.src = 'lock.svg';
 
 function displaySymbol(isDot) {
 	document.getElementById('symbols').appendChild((isDot ? DOT : DASH).cloneNode(false));
@@ -243,11 +264,15 @@ var latestChat = {};
 
 function createChat(name, text='') {
 	let chatText = text;
+	
 	let chatNode = document.createElement('div');
 	chatNode.classList.add('chat');
+	chatNode.classList.toggle('my-chat', name == myName);
+	
 	let chatNameNode = document.createElement('div');
 	chatNameNode.classList.add('chat-name');
 	chatNameNode.innerText = name;
+	
 	let chatTextNode = document.createElement('div');
 	chatTextNode.classList.add('chat-message');
 	chatTextNode.innerText = chatText;
@@ -262,10 +287,34 @@ function createChat(name, text='') {
 		pop: function() {
 			chatText = chatText.slice(0, -1);
 			chatTextNode.innerText = chatText;
+		},
+		set: function(content) {
+			chatText = content;
+			chatTextNode.innerText = content;
+			// innerHTML = content.split(' ').map(w => 
+			// `<span class="word" onclick="highlight(this)">${w}</span>`).join(' ');
 		}
 	};
 	latestChat[name] = updater;
 	return updater;
+}
+
+function highlight(span) {
+	let input = document.getElementById('response-input');
+	input.value = span.innerText;
+	input.focus();
+}
+
+function setPrompt(prompt) {
+	document.getElementById('prompt-text').innerText = prompt;
+}
+
+function clearFeedback() {
+	document.getElementById('feedback-text').innerText = '\xa0'; // hack?
+}
+
+function setFeedback(feedback) {
+	document.getElementById('feedback-text').innerText = feedback;
 }
 
 function createCodebook(codebook) {
@@ -273,64 +322,40 @@ function createCodebook(codebook) {
 		codebook.map(entry => `<div><span>${entry[0]}:</span><span>${entry[1]}</span></div>`).join('')
 }
 
+var locks = 0;
+
+function setLocks(amount) {
+	let container = document.getElementById('lock-container');
+	for (let i = 0; i < amount - locks; i++) {
+		container.append(LOCK.cloneNode(false));
+	}
+	for (let i = 0; i < locks - amount; i++) {
+		container.lastChild.remove();
+	}
+	locks = amount;
+}
+
 window.onload = function() {
-	createCodebook([["access","secure"],["adapt","whole"],["again","comment"],["artist","relevant"],["brother","repeatedly"],["creation","freedom"],["current","heart"],["defendant","desperate"],["distinct","structure"],["drawing","think"],["garden","shelf"],["importance","counter"],["infection","useful"],["instrument","traffic"],["interested","major"],["journal","slide"],["largely","appearance"],["manage","protein"],["national","disease"],["party","liberal"],["piece","prime"],["plate","summer"],["pollution","skill"],["portrait","economist"],["purchase","block"],["regional","energy"],["rifle","journalist"],["thick","because"],["thousand","incredible"],["weather","founder"],["while","taxpayer"],["yours","actually"]]);
+	setLocks(32);
+	createCodebook([["abroad","diverse"],["academic","describe"],["actual","grand"],["advance","refer"],["audience","regulate"],["business","reach"],["charge","annual"],["charity","visible"],["complete","relate"],["crowd","store"],["elect","whether"],["employ","dream"],["field","except"],["garlic","organize"],["impression","employment"],["increased","title"],["instead","shoulder"],["matter","little"],["mother","consume"],["nowhere","revolution"],["painful","amount"],["politics","completely"],["population","distribute"],["porch","difficulty"],["previous","crash"],["service","consist"],["shine","normally"],["square","realize"],["standard","closely"],["tobacco","sound"],["understand","general"],["waste","fighter"]]);
 }
 
 const MORSE = {
-	".-"  : "A",
-	"-...": "B",
-	"-.-.": "C",
-	"-.." : "D",
-	"."   : "E",
-	"..-.": "F",
-	"--." : "G",
-	"....": "H",
-	".."  : "I",
-	".---": "J",
-	"-.-" : "K",
-	".-..": "L",
-	"--"  : "M",
-	"-."  : "N",
-	"---" : "O",
-	".--.": "P",
-	"--.-": "Q",
-	".-." : "R",
-	"..." : "S",
-	"-"   : "T",
-	"..-" : "U",
-	"...-": "V",
-	".--" : "W",
-	"-..-": "X",
-	"-.--": "Y",
-	"--..": "Z",
+	".-"  : "A", "-...": "B", "-.-.": "C", "-.." : "D",
+	"."   : "E", "..-.": "F", "--." : "G", "....": "H",
+	".."  : "I", ".---": "J", "-.-" : "K", ".-..": "L",
+	"--"  : "M", "-."  : "N", "---" : "O", ".--.": "P",
+	"--.-": "Q", ".-." : "R", "..." : "S", "-"   : "T",
+	"..-" : "U", "...-": "V", ".--" : "W", "-..-": "X",
+	"-.--": "Y", "--..": "Z",
 
-	".----": "1",
-	"..---": "2",
-	"...--": "3",
-	"....-": "4",
-	".....": "5",
-	"-....": "6",
-	"--...": "7",
-	"---..": "8",
-	"----.": "9",
-	"-----": "0",
+	".----": "1", "..---": "2", "...--": "3", "....-": "4",
+	".....": "5", "-....": "6", "--...": "7", "---..": "8",
+	"----.": "9", "-----": "0",
 	
-	".-.-.-": ".",
-	"--..--": ",",
-	"..--..": "?",
-	".----.": "'",
-	"-.-.--": "!",
-	"-..-." : "(",
-	"-..-.-": ")",
-	".-..." : "&",
-	"---...": ":",
-	"-.-.-.": ";",
-	".-.-." : "+",
-	"-....-": "-",
-	"..--.-": "_",
-	".-..-.": "\"",
-	"...-..-": "$",
-	".--.-.": "@",
+	".-.-.-": ".", "--..--": ",", "..--..": "?", ".----.": "'",
+	"-.-.--": "!", "-..-." : "(", "-..-.-": ")", ".-..." : "&",
+	"---...": ":", "-.-.-.": ";", ".-.-." : "+", "-....-": "-",
+	"..--.-": "_", ".-..-.": '"', ".--.-.": "@", "...-..-": "$",
 	"-..-." : "/"
 };

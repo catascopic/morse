@@ -59,24 +59,25 @@ body {
 .sending {
 	display: flex;
 	flex-direction: column;
+	gap: 32px;
 }
 
 .receiving {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 6px;
 }
 
 .chat {
 	display: flex;
-	gap: 20px;
+	gap: 12px;
 	border-color: var(--amber);
 }
 
 .chat-name {
 	border-width: 2px;
 	border-style: solid;
-	padding: 2px;
+	padding: 0 2px;
 	display: flex;
 	align-items: center;
 }
@@ -128,11 +129,10 @@ body {
 }
 
 .telegraph {
-	flex: 1;
+	
 }
 
 .prompt {
-	flex: 2;
 	display: flex;
 }
 
@@ -141,12 +141,12 @@ body {
 }
 
 #prompt-text {
-	/* border: 2px solid var(--amber); */
 	font-size: 24px;
+	text-transform: uppercase;
 }
 
 #response-input {
-	margin-top: 4px;
+	margin: 4px 0;
 	text-transform: uppercase;
 }
 
@@ -162,6 +162,27 @@ input:focus {
 	border-color: var(--amber);
 }
 
+.locks {
+	
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+}
+
+.lock-title {
+	font-size: 18px;
+	text-align: center;
+}
+
+#lock-container {
+	display: inline-grid;
+	grid-auto-flow: row;
+	grid-template-columns: repeat(12, 20px);
+	gap: 4px;
+	place-items: center;
+}
+
 .chart-title {
 	font-size: 24px;
 	text-align: center;
@@ -169,6 +190,7 @@ input:focus {
 }
 
 .morse {
+	font-size: 18px;
 	display: grid;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(13, 1fr);
@@ -180,16 +202,13 @@ input:focus {
 	gap: 9px;
 }
 
-.morse > div > span:first-child {
-	font-size: 18px;
-}
-
 .morse > div > span:nth-child(2) {
 	display: inline-flex;
 	gap: 9px;
 }
 
 .codebook {
+	font-size: 14px;
 	display: grid;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(16, 1fr);
@@ -199,10 +218,6 @@ input:focus {
 	padding: 0 4px;
 	display: flex;
 	gap: 14px;
-}
-
-.codebook > div > span {
-	font-size: 14px;
 }
 
 

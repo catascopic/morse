@@ -8,27 +8,33 @@
 </head>
 <body>
 	
-<div id="main" class="content hidden">
+<div id="main" class="content">
 	<div class="column sending">
 		<div class="telegraph">
 			<div class="display"><div id="message"></div></div>
 			<div id="icon">Use spacebar as telegraph key</div>
 			<div><div id="symbols"></div></div>
 		</div>
-		<div class="prompt">
-			<div>
-				<div>Your prompt:</div>
-				<div id="prompt-text">AUTOMOBILE</div>
+		<div>
+			<div class="prompt">
+				<div>
+					<div>Your prompt:</div>
+					<div id="prompt-text">AUTOMOBILE</div>
+				</div>
+				<div>
+					<div>Response:</div>
+					<input id="response-input">
+					<div id="feedback-text">&nbsp;</div>
+				</div>
 			</div>
-			<div>
-				<div>Response:</div>
-				<input id="response-input">
-				<div></div>
-			</div>
+		</div>
+		<div class="locks">
+			<div class="lock-title">Time machine: locked</div>
+			<div id="lock-container"></div>
 		</div>
 	</div>
 	<div class="column receiving" id="chats">
-		<div class="chat my-chat">
+		<div class="chat">
 			<div class="chat-name">ABC</div>
 			<div class="chat-message">ETAOIN</div>
 		</div>
@@ -39,7 +45,7 @@
 	</div>
 </div>
 
-<div id="chart" class="content">
+<div id="chart" class="content hidden">
 	<div class="column">
 		<div class="chart-title">MORSE CODE ALPHABET</div>
 		<div class="morse">
