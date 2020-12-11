@@ -14,8 +14,8 @@ var myChat = '';
 var standardLayout = true;
 var mainView = true;
 
-const DOT_THRESHOLD = 200;
-const CODE_THRESHOLD = 600;
+var dotThreshold = 200;
+var letterThreshold = 600;
 
 const SPACE_CHAR = ' ';
 
@@ -24,44 +24,57 @@ const PORT = 3637;
 var socket;
 
 function keyDown(event) {
+	if (event.code == 'Tab') {
+		// disable tab entirely
+		event.preventDefault();
+	}
 	if (event.repeat) {
+		// none of the hotkeys work if you hold them down
 		return;
 	}
 
 	let responseInput = document.getElementById('response-input');
-	// space is always the morse key
+	
+	// space is the most important key, handle it first
 	if (event.code == 'Space' && !event.shiftKey) {
 		signalOn();
 		responseInput.blur();
-	} else if (document.activeElement == responseInput) {
-		clearFeedback();
-		switch (event.code) {
-			case 'Enter': 
-				sumbitResponse(responseInput.value);
-				responseInput.value = '';
-			// fallthrough
-			case 'Escape': responseInput.blur(); break;
-			default:
-		}
 	} else {
 		if (inProgress()) {
+			// backspace is the only hotkey that works here
 			if (event.code == 'Backspace') {
 				cancel();
 			}
+		} else if (event.code == 'Tab') {
+			changeView();
+		} else if (document.activeElement == responseInput) {
+			clearFeedback();
+			switch (event.code) {
+				case 'Enter': 
+					sumbitResponse(responseInput.value);
+					responseInput.value = '';
+				// fallthrough
+				case 'Escape': responseInput.blur(); break;
+				default:
+			}
 		} else {
-			switch (event.code) {			
+			switch (event.code) {		
 				case 'Space': addSpace(); break;
 				case 'Backspace': undo(); break;
 				case 'Enter': endLine(); break;
-				case 'KeyI': responseInput.focus(); break;
-				case 'KeyM': changeView(); break;
 				case 'KeyV': changeLayout(); break;
+				case 'KeyI':
+					responseInput.focus(); 
+					responseInput.select(); 
+					break;
 				default: return;
 			}
 			event.preventDefault();
 		}
 	}
 	clearFeedback();
+	
+	// TODO: fix this
 	if (invalid) {
 		clearTimeout(timeout);
 		clearInvalid();
@@ -82,12 +95,12 @@ function signalOn() {
 
 function signalOff() {
 	let duration = Date.now() - signal;
-	let isDot = duration < DOT_THRESHOLD;
+	let isDot = duration < dotThreshold;
 	signal = 0;
 	// console.log(duration);
 	buffer.push(isDot ? '.': '-');
 	displaySymbol(isDot);
-	timeout = setTimeout(endSequence, CODE_THRESHOLD);
+	timeout = setTimeout(endSequence, letterThreshold);
 	lightOn(false);
 }
 
@@ -143,7 +156,7 @@ function undo() {
 }
 
 function endLine() {
-	if (!inProgress() && myChat.length >= 5) {
+	if (!inProgress()) {
 		myChat = '';
 		setActiveChat();
 		canUndo = false;
@@ -173,15 +186,20 @@ function connect(name) {
 	if (socket) {
 		socket.close(4002);
 	}
-	myName = name;
-	socket = new WebSocket(`ws://${window.location.hostname}:${PORT}/${name}`);
+	myName = name || localStorage.getItem('name');
+	socket = new WebSocket(`ws://${window.location.hostname || 'localhost'}:${PORT}/${myName}`);
 	socket.onmessage = function(event) {
 		receive(JSON.parse(event.data));
 		console.log(event.data);
 	};
 	socket.onclose = function(event) {
 		console.log(`disconnected (${event.code}): ${event.reason || 'no reason'}`);
+		setPrompt('\xa0');
+		setLockText('Disconnected');
+		setLocks(0);
+		createCodebook([]);
 		socket = null;
+		setServerMessage(`Disconnected! ${event.code}: ${event.reason || 'no reason given'}\nPlease refresh the page to try again.`);
 	};
 }
 
@@ -228,14 +246,14 @@ function sumbitResponse(response) {
 
 // UI FUNCTIONS
 
-function changeLayout() {
-	standardLayout ^= true;
-	mainView = true;
+function changeView() {
+	mainView ^= true;
 	display();
 }
 
-function changeView() {
-	mainView ^= true;
+function changeLayout() {
+	standardLayout ^= true;
+	mainView = true;
 	display();
 }
 
@@ -258,7 +276,7 @@ function show(id, state) {
 }
 
 function setActiveChat() {
-	document.getElementById('message').innerText = myChat;
+	setNodeText('message', myChat);
 }
 
 function lightOn(state) {
@@ -329,22 +347,22 @@ function createChat(name, text='') {
 	return updater;
 }
 
-function highlight(span) {
-	let input = document.getElementById('response-input');
-	input.value = span.innerText;
-	input.focus();
-}
+// function highlight(span) {
+	// let input = document.getElementById('response-input');
+	// input.value = span.innerText;
+	// input.focus();
+// }
 
-function setPrompt(prompt) {
-	document.getElementById('prompt-text').innerText = prompt;
+function setPrompt(text) {
+	setNodeText('prompt-text', text);
 }
 
 function clearFeedback() {
-	document.getElementById('feedback-text').innerText = '\xa0'; // hack?
+	setFeedback('\xa0'); // hack?
 }
 
-function setFeedback(feedback) {
-	document.getElementById('feedback-text').innerText = feedback;
+function setFeedback(text) {
+	setNodeText('feedback-text', text);
 }
 
 function createCodebook(codebook) {
@@ -365,9 +383,34 @@ function setLocks(amount) {
 	locks = amount;
 }
 
+function setLockText(text) {
+	setNodeText('lock-text', text);
+}
+
+function setServerMessage(text) {
+	setNodeText('server-message', text);
+}
+
+function setNodeText(id, text) {
+	document.getElementById(id).innerText = text;
+}
+
 window.onload = function() {
-	// setLocks(32);
-	// createCodebook([["abroad","diverse"],["academic","describe"],["actual","grand"],["advance","refer"],["audience","regulate"],["business","reach"],["charge","annual"],["charity","visible"],["complete","relate"],["crowd","store"],["elect","whether"],["employ","dream"],["field","except"],["garlic","organize"],["impression","employment"],["increased","title"],["instead","shoulder"],["matter","little"],["mother","consume"],["nowhere","revolution"],["painful","amount"],["politics","completely"],["population","distribute"],["porch","difficulty"],["previous","crash"],["service","consist"],["shine","normally"],["square","realize"],["standard","closely"],["tobacco","sound"],["understand","general"],["waste","fighter"]]);
+	setLocks(35);
+	setPrompt('AUTOMOBILE');
+	createCodebook([["abroad","diverse"],["academic","describe"],["actual","grand"],["advance","refer"],["audience","regulate"],["business","reach"],["charge","annual"],["charity","visible"],["complete","relate"],["crowd","store"],["elect","whether"],["employ","dream"],["field","except"],["garlic","organize"],["impression","employment"],["increased","title"],["instead","shoulder"],["matter","little"],["mother","consume"],["nowhere","revolution"],["painful","amount"],["politics","completely"],["population","distribute"],["porch","difficulty"],["previous","crash"],["service","consist"],["shine","normally"],["square","realize"],["standard","closely"],["tobacco","sound"],["understand","general"],["waste","fighter"]]);
+}
+
+function fastMode() {
+	if (dotThreshold == 200) {
+		dotThreshold = 100;
+		letterThreshold = 300;
+		console.log('fast mode enabled');
+	} else {
+		dotThreshold = 200;
+		letterThreshold = 600;
+		console.log('fast mode disabled');
+	}
 }
 
 const MORSE = {

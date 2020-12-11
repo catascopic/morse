@@ -14,8 +14,11 @@
 }
 
 html {
-	background-color: black;
 	color: var(--amber);
+}
+
+.winner {
+	background-color: #120A8F
 }
 
 html, body {
@@ -25,6 +28,7 @@ html, body {
 }
 
 body {
+	background-color: black;
 	/* kind of a hack, I really just want padding but it messes with the sizing */
 	box-sizing: border-box;
 	border: 20px solid transparent; 
@@ -47,6 +51,7 @@ body {
 	padding: 8px;
 	overflow-y: auto;
 	max-width: 480px;
+	max-height: 640px;
 	background-color: var(--background);
 	box-sizing: border-box;
 	border: 2px solid lightSlateGray;
@@ -55,7 +60,7 @@ body {
 .sending {
 	display: flex;
 	flex-direction: column;
-	gap: 32px;
+	gap: 24px;
 }
 
 .receiving {
@@ -124,8 +129,8 @@ body {
 	background-color: red;
 }
 
-.telegraph {
-	
+.game {
+	flex: 1;
 }
 
 .prompt {
@@ -139,6 +144,7 @@ body {
 #prompt-text {
 	font-size: 24px;
 	text-transform: uppercase;
+	margin-bottom: 8px;
 }
 
 #response-input {
@@ -173,9 +179,13 @@ input:focus {
 #lock-container {
 	display: inline-grid;
 	grid-auto-flow: row;
-	grid-template-columns: repeat(12, 20px);
+	grid-template-columns: repeat(10, 20px);
 	gap: 4px;
 	place-items: center;
+}
+
+#server-message {
+	white-space: pre-wrap;
 }
 
 .chart-title {
@@ -215,11 +225,17 @@ input:focus {
 	gap: 14px;
 }
 
-
+.controls {
+	font-size: 14px;
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-rows: repeat(4, 1fr);
+	gap: 1px;
+}
 
 kbd {
+    border: 1px outset lightSlateGray;
     border-radius: 3px;
-    border: 1px solid lightSlateGray;
 	color: lightSlateGray;
     display: inline-block;
     font-size: .85em;

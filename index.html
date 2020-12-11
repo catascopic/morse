@@ -53,22 +53,33 @@
 			<div id="icon">Use spacebar as telegraph key</div>
 			<div><div id="symbols"></div></div>
 		</div>
-		<div>
+		<div class="game">
 			<div class="prompt">
 				<div>
 					<div>Your prompt:</div>
 					<div id="prompt-text">&nbsp;</div>
-				</div>
-				<div>
 					<div>Response:</div>
 					<input id="response-input">
 					<div id="feedback-text">&nbsp;</div>
 				</div>
+				<div class="locks">
+					<div id="lock-text">Time machine: locked</div>
+					<div id="lock-container"></div>
+				</div>
 			</div>
+			<div id="server-message"></div>
 		</div>
-		<div class="locks">
-			<div id="lock-text">use connect(callsign)</div>
-			<div id="lock-container"></div>
+		
+		<div class="controls">
+			<div><kbd>Space</kbd> send Morse code</div>
+			<div><kbd>Shift</kbd>+<kbd>Space</kbd> actual space</div>
+			<div><kbd>Backspace</kbd> delete last letter</div>
+			<div><kbd>Enter</kbd> end line/send response</div>
+			<div><kbd>Tab</kbd> switch view</div>
+			<div><kbd>V</kbd> toggle layout</div>
+			<div><kbd>I</kbd> select response</div>
+			<div><kbd>Esc</kbd> defocus response</div>
+			<!-- <div><kbd>Esc</kbd> deselect response</div> -->
 		</div>
 	</div>
 	
