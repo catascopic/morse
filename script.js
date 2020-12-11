@@ -11,7 +11,8 @@ var invalid = false;
 var myName = 'PLU';
 var myChat = '';
 
-var activeTab = 'main';
+var standardLayout = true;
+var mainView = true;
 
 const DOT_THRESHOLD = 200;
 const CODE_THRESHOLD = 600;
@@ -21,19 +22,6 @@ const SPACE_CHAR = ' ';
 const PORT = 3637;
 
 var socket;
-
-function connect(name) {
-	myName = name;
-	socket = new WebSocket(`ws://${window.location.hostname}:${PORT}/${name}`);
-	socket.onmessage = function(event) {
-		receive(JSON.parse(event.data));
-		console.log(event.data);
-	};
-	socket.onclose = function(event) {
-		console.log(`disconnected (${event.code}): ${event.reason || 'no reason'}`);
-		socket = null;
-	};
-}
 
 function keyDown(event) {
 	if (event.repeat) {
@@ -66,7 +54,8 @@ function keyDown(event) {
 				case 'Backspace': undo(); break;
 				case 'Enter': endLine(); break;
 				case 'KeyI': responseInput.focus(); break;
-				case 'KeyM': setTab(activeTab == 'main' ? 'chart' : 'main'); break;
+				case 'KeyM': changeView(); break;
+				case 'KeyV': changeLayout(); break;
 				default: return;
 			}
 			event.preventDefault();
@@ -82,11 +71,6 @@ function keyDown(event) {
 function keyUp(event) {
 	if (event.code == 'Space' && signal) {
 		signalOff();
-	} else {
-		switch (event.code) {
-			// case 'KeyM': setTab('main'); break;
-			default:
-		}
 	}
 }
 
@@ -132,7 +116,7 @@ function cancel() {
 function addLetter(letter) {
 	canUndo = true;
 	myChat += letter;
-	display();
+	setActiveChat();
 	updateChat(myName, myChat, newline);
 	message = {chat: myChat};
 	if (newline) {
@@ -151,7 +135,7 @@ function addSpace() {
 function undo() {
 	if (canUndo && myChat.length) {
 		myChat = myChat.slice(0, -1);
-		display();
+		setActiveChat();
 		updateChat(myName, myChat);
 		send({chat: myChat});
 		canUndo = false;
@@ -161,7 +145,7 @@ function undo() {
 function endLine() {
 	if (!inProgress() && myChat.length >= 5) {
 		myChat = '';
-		display();
+		setActiveChat();
 		canUndo = false;
 		newline = true;
 	}
@@ -183,6 +167,22 @@ function send(data) {
 function clearInvalid() {
 	setInvalid(false);
 	clearSymbols();
+}
+
+function connect(name) {
+	if (socket) {
+		socket.close(4002);
+	}
+	myName = name;
+	socket = new WebSocket(`ws://${window.location.hostname}:${PORT}/${name}`);
+	socket.onmessage = function(event) {
+		receive(JSON.parse(event.data));
+		console.log(event.data);
+	};
+	socket.onclose = function(event) {
+		console.log(`disconnected (${event.code}): ${event.reason || 'no reason'}`);
+		socket = null;
+	};
 }
 
 function receive(data) {
@@ -208,7 +208,7 @@ function receive(data) {
 	}
 	if (data.myChat) {
 		myChat = data.myChat;
-		display();
+		setActiveChat();
 	}
 }
 
@@ -228,14 +228,36 @@ function sumbitResponse(response) {
 
 // UI FUNCTIONS
 
+function changeLayout() {
+	standardLayout ^= true;
+	mainView = true;
+	display();
+}
 
-function setTab(tabName) {
-	document.getElementById(activeTab).classList.add('hidden');	
-	document.getElementById(tabName).classList.remove('hidden');
-	activeTab = tabName;
+function changeView() {
+	mainView ^= true;
+	display();
 }
 
 function display() {
+	if (standardLayout) {
+		show('display', mainView);
+		show('chat', mainView);
+		show('morse', !mainView)
+	} else {
+		show('display', true);
+		show('chat', true);
+		show('morse', mainView);
+	}
+	// show('morse', standardLayout ^ mainView);
+	show('codebook', !mainView);
+}
+
+function show(id, state) {
+	document.getElementById(id).classList.toggle('hidden', !state);
+}
+
+function setActiveChat() {
 	document.getElementById('message').innerText = myChat;
 }
 
@@ -285,7 +307,7 @@ function createChat(name, text='') {
 	chatTextNode.classList.add('chat-message');
 	chatTextNode.innerText = chatText;
 	chatNode.append(chatNameNode, chatTextNode);
-	document.getElementById('chats').prepend(chatNode);
+	document.getElementById('chat').prepend(chatNode);
 	
 	let updater = {
 		push: function(letter) {

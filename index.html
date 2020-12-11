@@ -8,36 +8,9 @@
 </head>
 <body>
 
-<div id="main" class="content">
-	<div class="column sending">
-		<div class="telegraph">
-			<div class="display"><div id="message"></div></div>
-			<div id="icon">Use spacebar as telegraph key</div>
-			<div><div id="symbols"></div></div>
-		</div>
-		<div>
-			<div class="prompt">
-				<div>
-					<div>Your prompt:</div>
-					<div id="prompt-text">&nbsp;</div>
-				</div>
-				<div>
-					<div>Response:</div>
-					<input id="response-input">
-					<div id="feedback-text">&nbsp;</div>
-				</div>
-			</div>
-		</div>
-		<div class="locks">
-			<div id="lock-text">use connect(callsign)</div>
-			<div id="lock-container"></div>
-		</div>
-	</div>
-	<div class="column receiving" id="chats"></div>
-</div>
+<div class="content">
 
-<div id="chart" class="content hidden">
-	<div class="column">
+	<div class="column hidden" id="morse">
 		<div class="chart-title">MORSE CODE ALPHABET</div>
 		<div class="morse">
 			<div><span>A</span><span><img src="dot.svg"><img src="dash.svg"></span></div>
@@ -68,10 +41,39 @@
 			<div><span>Z</span><span><img src="dash.svg"><img src="dash.svg"><img src="dot.svg"><img src="dot.svg"></span></div>
 		</div>
 	</div>
-	<div class="column">
+	
+	<div class="column hidden" id="codebook">
 		<div class="chart-title">SECRET CODEBOOK</div>
 		<div class="codebook" id="codebook-table"></div>
 	</div>
+
+	<div class="column sending" id="display">
+		<div class="telegraph">
+			<div class="display"><div id="message"></div></div>
+			<div id="icon">Use spacebar as telegraph key</div>
+			<div><div id="symbols"></div></div>
+		</div>
+		<div>
+			<div class="prompt">
+				<div>
+					<div>Your prompt:</div>
+					<div id="prompt-text">&nbsp;</div>
+				</div>
+				<div>
+					<div>Response:</div>
+					<input id="response-input">
+					<div id="feedback-text">&nbsp;</div>
+				</div>
+			</div>
+		</div>
+		<div class="locks">
+			<div id="lock-text">use connect(callsign)</div>
+			<div id="lock-container"></div>
+		</div>
+	</div>
+	
+	<div class="column receiving" id="chat"></div>
+	
 </div>
 
 </body>
