@@ -23,13 +23,14 @@ const PORT = 3637;
 var socket;
 
 function connect(name) {
+	myName = name;
 	socket = new WebSocket(`ws://${window.location.hostname}:${PORT}/${name}`);
 	socket.onmessage = function(event) {
 		receive(JSON.parse(event.data));
-		console.log(name + ': ' + event.data);
+		console.log(event.data);
 	};
 	socket.onclose = function(event) {
-		console.log(name + ' is disconnected: ' + event.reason);
+		console.log(`disconnected (${event.code}): ${event.reason || 'no reason'}`);
 		socket = null;
 	};
 }
@@ -133,7 +134,7 @@ function addLetter(letter) {
 	myChat += letter;
 	display();
 	updateChat(myName, myChat, newline);
-	message = {message: myChat};
+	message = {chat: myChat};
 	if (newline) {
 		message.newline = true;
 		newline = false;
@@ -152,7 +153,7 @@ function undo() {
 		myChat = myChat.slice(0, -1);
 		display();
 		updateChat(myName, myChat);
-		send({message: myChat});
+		send({chat: myChat});
 		canUndo = false;
 	}
 }
@@ -186,12 +187,12 @@ function clearInvalid() {
 
 function receive(data) {
 	if (data.backlog) {
-		for (let message of backlog) {
-			createChat(message.name, message.content);
+		for (let chat of data.backlog) {
+			createChat(chat.name, chat.content);
 		}
 	}
-	if (data.message) {
-		updateChat(data.message.name, data.message.content, data.newline);
+	if (data.chat) {
+		updateChat(data.chat.name, data.chat.content, data.newline);
 	}
 	if (data.goal != undefined) {
 		setLocks(data.goal);
@@ -204,6 +205,10 @@ function receive(data) {
 	}
 	if (data.feedback != undefined) {
 		setFeedback(data.feedback ? 'Correct!' : 'Incorrect.');
+	}
+	if (data.myChat) {
+		myChat = data.myChat;
+		display();
 	}
 }
 
@@ -339,8 +344,8 @@ function setLocks(amount) {
 }
 
 window.onload = function() {
-	setLocks(32);
-	createCodebook([["abroad","diverse"],["academic","describe"],["actual","grand"],["advance","refer"],["audience","regulate"],["business","reach"],["charge","annual"],["charity","visible"],["complete","relate"],["crowd","store"],["elect","whether"],["employ","dream"],["field","except"],["garlic","organize"],["impression","employment"],["increased","title"],["instead","shoulder"],["matter","little"],["mother","consume"],["nowhere","revolution"],["painful","amount"],["politics","completely"],["population","distribute"],["porch","difficulty"],["previous","crash"],["service","consist"],["shine","normally"],["square","realize"],["standard","closely"],["tobacco","sound"],["understand","general"],["waste","fighter"]]);
+	// setLocks(32);
+	// createCodebook([["abroad","diverse"],["academic","describe"],["actual","grand"],["advance","refer"],["audience","regulate"],["business","reach"],["charge","annual"],["charity","visible"],["complete","relate"],["crowd","store"],["elect","whether"],["employ","dream"],["field","except"],["garlic","organize"],["impression","employment"],["increased","title"],["instead","shoulder"],["matter","little"],["mother","consume"],["nowhere","revolution"],["painful","amount"],["politics","completely"],["population","distribute"],["porch","difficulty"],["previous","crash"],["service","consist"],["shine","normally"],["square","realize"],["standard","closely"],["tobacco","sound"],["understand","general"],["waste","fighter"]]);
 }
 
 const MORSE = {
