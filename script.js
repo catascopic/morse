@@ -131,7 +131,7 @@ function addLetter(letter) {
 	myChat += letter;
 	setActiveChat();
 	updateChat(myName, myChat, newline);
-	message = {chat: myChat};
+	let message = {chat: myChat};
 	if (newline) {
 		message.newline = true;
 		newline = false;
