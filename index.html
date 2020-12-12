@@ -57,7 +57,7 @@
 		<div class="status" id="game">
 			<div class="prompt">
 				<div>
-					<div>Your prompt:</div>
+					<div>Prompt:</div>
 					<div id="prompt-text">&nbsp;</div>
 					<div>Response:</div>
 					<input id="response-input">
@@ -67,6 +67,14 @@
 					<div id="lock-text">Time machine: locked</div>
 					<div id="lock-container"></div>
 				</div>
+			</div>
+			<div id="help">
+				<span>Refresher: <span id="help-close" onclick="closeHelp()">(Close)</span></span>
+				<ul>
+				<li>Send your prompt (<span id="prompt-text-help"></span>) in Morse code.
+				<li>Wait for your secret contact to give you the response, then enter it above.  You'll get a new prompt if the response was correct.
+				<li>Don't forget to check your codebook (<kbd>Tab</kbd>) for other prompts you see, and transmit the response if you have it!  Make sure to address the correct person.
+				</ul>
 			</div>
 		</div>
 		

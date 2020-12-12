@@ -366,6 +366,7 @@ function createChat(name, text='') {
 
 function setPrompt(text) {
 	setNodeText('prompt-text', text);
+	setNodeText('prompt-text-help', text);
 }
 
 function clearFeedback() {
@@ -415,6 +416,10 @@ function unlock(url, dialIn) {
 
 function setNodeText(id, text) {
 	document.getElementById(id).innerText = text;
+}
+
+function closeHelp() {
+	show('help', false);
 }
 
 window.onload = function() {

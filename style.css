@@ -7,7 +7,7 @@
 
 @font-face {
 	font-family: 'Roboto Mono';
-	src: url('Roboto_Mono/RobotoMono-VariableFont_wght.ttf');
+	src: url('/fonts/Roboto_Mono/RobotoMono-VariableFont_wght.ttf');
 }
 
 * {
@@ -142,9 +142,12 @@ body {
 	flex: 1;
 }
 
+#prompt-text-help, #prompt-text {
+	text-transform: uppercase;
+}
+
 #prompt-text {
 	font-size: 24px;
-	text-transform: uppercase;
 	margin-bottom: 8px;
 }
 
@@ -183,6 +186,14 @@ input:focus {
 	grid-template-columns: repeat(10, 20px);
 	gap: 4px;
 	place-items: center;
+}
+
+#help {
+	font-size: 14px;
+}
+
+#help-close {
+	cursor: pointer;
 }
 
 #server-message {
