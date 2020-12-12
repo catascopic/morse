@@ -8,7 +8,7 @@ var canUndo;
 
 var invalid = false;
 
-var myName = 'PLU';
+var myName;
 var myChat = '';
 
 var standardLayout = true;
@@ -168,26 +168,21 @@ function inProgress() {
 	return signal || buffer.length;
 }
 
-function send(data) {
-	if (socket) {
-		socket.send(JSON.stringify(data));
-	} else {
-		console.log(data);
-		// TODO?
-	}
-}
-
 function clearInvalid() {
 	setInvalid(false);
 	clearSymbols();
 }
 
-function connect(name) {
+// NETWORK FUNCTIONS
+
+function connect() {
 	if (socket) {
 		socket.close(4002);
 	}
-	myName = name || localStorage.getItem('name');
-	socket = new WebSocket(`ws://${window.location.hostname || 'localhost'}:${PORT}/${myName}`);
+	myName = new URLSearchParams(window.location.search).get('name') || localStorage.getItem('name');
+	let url = `ws://${window.location.hostname || 'localhost'}:${PORT}/${myName}`;
+	socket = new WebSocket(url);
+	console.log(`connecting to ${url}`);
 	socket.onmessage = function(event) {
 		receive(JSON.parse(event.data));
 		console.log(event.data);
@@ -199,8 +194,17 @@ function connect(name) {
 		setLocks(0);
 		createCodebook([]);
 		socket = null;
-		setServerMessage(`Disconnected! ${event.code}: ${event.reason || 'no reason given'}\nPlease refresh the page to try again.`);
+		setDisconnectMessage(`Disconnected! ${event.code}: ${event.reason || 'no reason given'}\nPlease refresh the page to try again.`);
 	};
+}
+
+function send(data) {
+	if (socket) {
+		socket.send(JSON.stringify(data));
+	} else {
+		console.log(data);
+		// TODO?
+	}
 }
 
 function receive(data) {
@@ -210,7 +214,7 @@ function receive(data) {
 		}
 	}
 	if (data.chat) {
-		updateChat(data.chat.name, data.chat.content, data.newline);
+		updateChat(data.chat.name, data.chat.content, data.chat.newline);
 	}
 	if (data.goal != undefined) {
 		setLocks(data.goal);
@@ -228,23 +232,30 @@ function receive(data) {
 		myChat = data.myChat;
 		setActiveChat();
 	}
-}
-
-function updateChat(name, content, newline) {
-	let updater = latestChat[name];
-	if (newline || !updater) {
-		updater = createChat(name);
+	if (data.victory) {
+		unlock(data.victory.url, data.victory.dialIn);
 	}
-	updater.set(content);
 }
-
-// GAME FUNCTIONS
 
 function sumbitResponse(response) {
 	send({response: response.trim().toLowerCase()});
 }
 
 // UI FUNCTIONS
+
+
+function updateChat(name, content, newline) {
+	let updater;
+	if (newline) {
+		updater = createChat(name);
+	} else {
+		updater = latestChat[name];
+		if (!updater) {
+			updater = createChat(name);
+		}
+	}
+	updater.set(content);
+}
 
 function changeView() {
 	mainView ^= true;
@@ -372,23 +383,34 @@ function createCodebook(codebook) {
 
 var locks = 0;
 
-function setLocks(amount) {
+function setLocks(count) {
+	let bounded = Math.max(count, 0);
 	let container = document.getElementById('lock-container');
-	for (let i = 0; i < amount - locks; i++) {
+	for (let i = 0; i < bounded - locks; i++) {
 		container.append(LOCK.cloneNode(false));
 	}
-	for (let i = 0; i < locks - amount; i++) {
+	for (let i = 0; i < locks - bounded; i++) {
 		container.lastChild.remove();
 	}
-	locks = amount;
+	locks = bounded;
 }
 
 function setLockText(text) {
 	setNodeText('lock-text', text);
 }
 
-function setServerMessage(text) {
-	setNodeText('server-message', text);
+function setDisconnectMessage(text) {
+	show('game', false);
+	show('disconnect', true);
+	setNodeText('disconnect', text);
+}
+
+function unlock(url, dialIn) {
+	show('game', false);
+	show('victory', true);
+	document.getElementById('video-call').href = url;
+	setNodeText('dial-in', dialIn);
+	document.body.classList.add('victory-background');
 }
 
 function setNodeText(id, text) {
@@ -396,10 +418,8 @@ function setNodeText(id, text) {
 }
 
 window.onload = function() {
-	setLocks(35);
-	setPrompt('AUTOMOBILE');
-	createCodebook([["abroad","diverse"],["academic","describe"],["actual","grand"],["advance","refer"],["audience","regulate"],["business","reach"],["charge","annual"],["charity","visible"],["complete","relate"],["crowd","store"],["elect","whether"],["employ","dream"],["field","except"],["garlic","organize"],["impression","employment"],["increased","title"],["instead","shoulder"],["matter","little"],["mother","consume"],["nowhere","revolution"],["painful","amount"],["politics","completely"],["population","distribute"],["porch","difficulty"],["previous","crash"],["service","consist"],["shine","normally"],["square","realize"],["standard","closely"],["tobacco","sound"],["understand","general"],["waste","fighter"]]);
-}
+	connect();
+};
 
 function fastMode() {
 	if (dotThreshold == 200) {

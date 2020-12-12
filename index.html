@@ -53,7 +53,8 @@
 			<div id="icon">Use spacebar as telegraph key</div>
 			<div><div id="symbols"></div></div>
 		</div>
-		<div class="game">
+		
+		<div class="status" id="game">
 			<div class="prompt">
 				<div>
 					<div>Your prompt:</div>
@@ -67,8 +68,17 @@
 					<div id="lock-container"></div>
 				</div>
 			</div>
-			<div id="server-message"></div>
 		</div>
+		
+		<div class="status hidden" id="victory">
+			<div class="victory-border">
+				<div>Time machine: unlocked!</div>
+				<a href="" id="video-call">Return to 2020!</a>
+				<div id="dial-in"></div>
+			</div>
+		</div>
+		
+		<div class="status hidden" id="disconnect"></div>
 		
 		<div class="controls">
 			<div><kbd>Space</kbd> send Morse code</div>

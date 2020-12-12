@@ -2,6 +2,7 @@
 	--amber: #FFB000;
 	--green: #22BB00;
 	--background: #282828;
+	--portal: #67C8FF;
 }
 
 @font-face {
@@ -17,7 +18,7 @@ html {
 	color: var(--amber);
 }
 
-.winner {
+.victory-background {
 	background-color: #120A8F
 }
 
@@ -129,7 +130,7 @@ body {
 	background-color: red;
 }
 
-.game {
+.status {
 	flex: 1;
 }
 
@@ -231,6 +232,23 @@ input:focus {
 	grid-auto-flow: column;
 	grid-template-rows: repeat(4, 1fr);
 	gap: 1px;
+}
+
+#disconnect {
+	color: red;
+}
+
+.victory-border {
+	padding: 8px;
+	border: 8px solid var(--amber);
+}
+
+#victory a {
+	color: var(--portal);
+}
+
+#dial-in {
+	white-space: pre;
 }
 
 kbd {
