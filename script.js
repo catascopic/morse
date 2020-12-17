@@ -9,7 +9,7 @@ var canUndo;
 var invalid = false;
 
 var myName;
-var myChat = '';
+var activeChat = '';
 
 var standardLayout = true;
 var mainView = true;
@@ -17,6 +17,7 @@ var mainView = true;
 var dotThreshold = 200;
 var letterThreshold = 600;
 
+// consider changing this to interpunct
 const SPACE_CHAR = ' ';
 
 const PORT = 3637;
@@ -24,8 +25,8 @@ const PORT = 3637;
 var socket;
 
 function keyDown(event) {
-	if (event.code == 'Tab') {
-		// disable tab entirely
+	if (event.code == 'Tab' || event.code == 'Backspace') {
+		// disable these entirely
 		event.preventDefault();
 	}
 	if (event.repeat) {
@@ -53,7 +54,7 @@ function keyDown(event) {
 				case 'Enter': 
 					sumbitResponse(responseInput.value);
 					responseInput.value = '';
-				// fallthrough
+					// fallthrough
 				case 'Escape': responseInput.blur(); break;
 				default:
 			}
@@ -69,7 +70,6 @@ function keyDown(event) {
 					break;
 				default: return;
 			}
-			event.preventDefault();
 		}
 	}
 	clearFeedback();
@@ -128,10 +128,10 @@ function cancel() {
 
 function addLetter(letter) {
 	canUndo = true;
-	myChat += letter;
-	setActiveChat();
-	updateChat(myName, myChat, newline);
-	let message = {chat: myChat};
+	activeChat += letter;
+	showActiveChat();
+	updateChat(myName, activeChat, newline);
+	let message = {chat: activeChat};
 	if (newline) {
 		message.newline = true;
 		newline = false;
@@ -140,25 +140,25 @@ function addLetter(letter) {
 }
 
 function addSpace() {
-	if (myChat.length && myChat[myChat.length - 1] != SPACE_CHAR) {
+	if (activeChat.length && activeChat[activeChat.length - 1] != SPACE_CHAR) {
 		addLetter(SPACE_CHAR);
 	}
 }
 
 function undo() {
-	if (canUndo && myChat.length) {
-		myChat = myChat.slice(0, -1);
-		setActiveChat();
-		updateChat(myName, myChat);
-		send({chat: myChat});
+	if (canUndo && activeChat.length) {
+		activeChat = activeChat.slice(0, -1);
+		showActiveChat();
+		updateChat(myName, activeChat);
+		send({chat: activeChat});
 		canUndo = false;
 	}
 }
 
 function endLine() {
 	if (!inProgress()) {
-		myChat = '';
-		setActiveChat();
+		activeChat = '';
+		showActiveChat();
 		canUndo = false;
 		newline = true;
 	}
@@ -179,7 +179,6 @@ function connect() {
 	if (socket) {
 		socket.close(4002);
 	}
-	myName = new URLSearchParams(window.location.search).get('name') || localStorage.getItem('name');
 	let url = `ws://${window.location.hostname || 'localhost'}:${PORT}/${myName}`;
 	socket = new WebSocket(url);
 	console.log(`connecting to ${url}`);
@@ -189,12 +188,12 @@ function connect() {
 	};
 	socket.onclose = function(event) {
 		console.log(`disconnected (${event.code}): ${event.reason || 'no reason'}`);
-		setPrompt('\xa0');
-		setLockText('Disconnected');
-		setLocks(0);
+		showPrompt('\xa0');
+		showLockText('Disconnected');
+		showLocks(0);
 		createCodebook([]);
 		socket = null;
-		setDisconnectMessage(`Disconnected! ${event.code}: ${event.reason || 'no reason given'}\nPlease refresh the page to try again.`);
+		showDisconnectMessage(`Disconnected! ${event.code}: ${event.reason || 'no reason given'}\nPlease refresh the page to try again.`);
 	};
 }
 
@@ -217,23 +216,23 @@ function receive(data) {
 		updateChat(data.chat.name, data.chat.content, data.chat.newline);
 	}
 	if (data.goal != undefined) {
-		setLocks(data.goal);
+		showLocks(data.goal);
 	}
 	if (data.codebook) {
 		createCodebook(data.codebook);
 	}
 	if (data.prompt) {
-		setPrompt(data.prompt);
+		showPrompt(data.prompt);
 	}
 	if (data.feedback != undefined) {
-		setFeedback(data.feedback ? 'Correct!' : 'Incorrect.');
+		showFeedback(data.feedback ? 'Correct!' : 'Incorrect.');
 	}
-	if (data.myChat) {
-		myChat = data.myChat;
-		setActiveChat();
+	if (data.activeChat) {
+		activeChat = data.activeChat;
+		showActiveChat();
 	}
 	if (data.victory) {
-		unlock(data.victory.url, data.victory.dialIn);
+		showVictory(data.victory.url, data.victory.dialIn);
 	}
 }
 
@@ -254,7 +253,7 @@ function updateChat(name, content, newline) {
 			updater = createChat(name);
 		}
 	}
-	updater.set(content);
+	updater(content);
 }
 
 function changeView() {
@@ -286,8 +285,8 @@ function show(id, state) {
 	document.getElementById(id).classList.toggle('hidden', !state);
 }
 
-function setActiveChat() {
-	setNodeText('message', myChat);
+function showActiveChat() {
+	setNodeText('message', activeChat);
 }
 
 function lightOn(state) {
@@ -338,42 +337,24 @@ function createChat(name, text='') {
 	chatNode.append(chatNameNode, chatTextNode);
 	document.getElementById('chat').prepend(chatNode);
 	
-	let updater = {
-		push: function(letter) {
-			chatText += letter;
-			chatTextNode.innerText = chatText;
-		},
-		pop: function() {
-			chatText = chatText.slice(0, -1);
-			chatTextNode.innerText = chatText;
-		},
-		set: function(content) {
-			chatText = content;
-			chatTextNode.innerText = content;
-			// innerHTML = content.split(' ').map(w => 
-			// `<span class="word" onclick="highlight(this)">${w}</span>`).join(' ');
-		}
+	let updater = function(content) {
+		chatText = content;
+		chatTextNode.innerText = content;
 	};
 	latestChat[name] = updater;
 	return updater;
 }
 
-// function highlight(span) {
-	// let input = document.getElementById('response-input');
-	// input.value = span.innerText;
-	// input.focus();
-// }
-
-function setPrompt(text) {
+function showPrompt(text) {
 	setNodeText('prompt-text', text);
 	setNodeText('prompt-text-help', text);
 }
 
 function clearFeedback() {
-	setFeedback('\xa0'); // hack?
+	showFeedback('\xa0'); // hack?
 }
 
-function setFeedback(text) {
+function showFeedback(text) {
 	setNodeText('feedback-text', text);
 }
 
@@ -384,7 +365,7 @@ function createCodebook(codebook) {
 
 var locks = 0;
 
-function setLocks(count) {
+function showLocks(count) {
 	let bounded = Math.max(count, 0);
 	let container = document.getElementById('lock-container');
 	for (let i = 0; i < bounded - locks; i++) {
@@ -396,17 +377,17 @@ function setLocks(count) {
 	locks = bounded;
 }
 
-function setLockText(text) {
+function showLockText(text) {
 	setNodeText('lock-text', text);
 }
 
-function setDisconnectMessage(text) {
+function showDisconnectMessage(text) {
 	show('game', false);
 	show('disconnect', true);
 	setNodeText('disconnect', text);
 }
 
-function unlock(url, dialIn) {
+function showVictory(url, dialIn) {
 	show('game', false);
 	show('victory', true);
 	document.getElementById('video-call').href = url;
@@ -423,6 +404,7 @@ function closeHelp() {
 }
 
 window.onload = function() {
+	myName = new URLSearchParams(window.location.search).get('name') || localStorage.getItem('name');
 	connect();
 };
 
