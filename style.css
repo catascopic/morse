@@ -134,6 +134,10 @@ body {
 	flex: 1;
 }
 
+#help {
+	margin-top: 12px;
+}
+
 .prompt {
 	display: flex;
 }

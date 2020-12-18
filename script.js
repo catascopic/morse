@@ -223,6 +223,9 @@ function receive(data) {
 	}
 	if (data.prompt) {
 		showPrompt(data.prompt);
+		if (data.feedback == undefined) {
+			// TODO: this means your contact disconnected
+		}
 	}
 	if (data.feedback != undefined) {
 		showFeedback(data.feedback ? 'Correct!' : 'Incorrect.');
@@ -347,7 +350,7 @@ function createChat(name, text='') {
 
 function showPrompt(text) {
 	setNodeText('prompt-text', text);
-	setNodeText('prompt-text-help', text);
+	setNodeText('prompt-text-help', '(' + text + ')');
 }
 
 function clearFeedback() {
