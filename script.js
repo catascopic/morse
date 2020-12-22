@@ -413,7 +413,7 @@ window.onload = function() {
 };
 
 function randomCallsign() {
-	randomLetter() + randomLetter() + randomLetter();
+	return randomLetter() + randomLetter() + randomLetter();
 }
 
 function randomLetter() {
