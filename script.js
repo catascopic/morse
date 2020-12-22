@@ -325,8 +325,6 @@ function clearSymbols() {
 var latestChat = {};
 
 function createChat(name, text='') {
-	let chatText = text;
-	
 	let chatNode = document.createElement('div');
 	chatNode.classList.add('chat');
 	chatNode.classList.toggle('my-chat', name == myName);
@@ -337,12 +335,12 @@ function createChat(name, text='') {
 	
 	let chatTextNode = document.createElement('div');
 	chatTextNode.classList.add('chat-message');
-	chatTextNode.innerText = chatText;
+	chatTextNode.innerText = text;
+	
 	chatNode.append(chatNameNode, chatTextNode);
 	document.getElementById('chat').prepend(chatNode);
 	
 	let updater = function(content) {
-		chatText = content;
 		chatTextNode.innerText = content;
 	};
 	latestChat[name] = updater;
