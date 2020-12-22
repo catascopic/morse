@@ -97,7 +97,7 @@ function signalOff() {
 	let duration = Date.now() - signal;
 	let isDot = duration < dotThreshold;
 	signal = 0;
-	// console.log(duration);
+	console.log(duration);
 	buffer.push(isDot ? '.': '-');
 	displaySymbol(isDot);
 	timeout = setTimeout(endSequence, letterThreshold);
@@ -242,6 +242,7 @@ function receive(data) {
 function sumbitResponse(response) {
 	send({response: response.trim().toLowerCase()});
 }
+
 
 // UI FUNCTIONS
 
@@ -407,9 +408,19 @@ function closeHelp() {
 }
 
 window.onload = function() {
-	myName = new URLSearchParams(window.location.search).get('name') || localStorage.getItem('name');
+	myName = new URLSearchParams(window.location.search).get('name')
+		|| localStorage.getItem('name')
+		|| randomCallsign();
 	connect();
 };
+
+function randomCallsign() {
+	randomLetter() + randomLetter() + randomLetter();
+}
+
+function randomLetter() {
+	return String.fromCharCode(65 + Math.floor(Math.random() * 26))
+}
 
 function fastMode() {
 	if (dotThreshold == 200) {
